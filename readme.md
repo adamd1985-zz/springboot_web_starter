@@ -2,6 +2,11 @@
 
 This is a developer "diary" with minor observations on what is required.
 
+## Usage
+
+http://localhost:9000/
+
+Access: _application.yaml_ to alter ports and credentials.
 
 ## Webjars
 
