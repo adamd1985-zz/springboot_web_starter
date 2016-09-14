@@ -5,3 +5,5 @@ security:
 logging:
   level:
     org.springframework.security: DEBUG
+server:
+  port: 9000
