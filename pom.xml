@@ -22,6 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+		<jasmine.serverPort>6000</jasmine.serverPort>
 	</properties>
 
 	<dependencies>
@@ -32,6 +33,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security.oauth</groupId>
+			<artifactId>spring-security-oauth2</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -75,12 +80,16 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
+			<!-- Jasmine works with saga plugin for coverage, it will wait for the 
+				plugin to harvest the results before shutting down -->
 			<plugin>
 				<groupId>com.github.searls</groupId>
 				<artifactId>jasmine-maven-plugin</artifactId>
 				<version>2.2</version>
 				<executions>
 					<execution>
+						<id>start-frontend-tests</id>
+						<phase>test</phase>
 						<goals>
 							<goal>test</goal>
 						</goals>
@@ -97,13 +106,44 @@
 						<source>webjars/angularjs/angular.min.js</source>
 						<source>webjars/angularjs/angular-route.min.js</source>
 						<source>webjars/angularjs/angular-cookies.min.js</source>
-						<source>/webjars/angularjs/1.5.8/angular-mocks.js</source>
+						<source>webjars/angularjs/angular-mocks.js</source>
 					</preloadSources>
 					<jsSrcDir>${project.basedir}/src/main/resources/static/js</jsSrcDir>
 					<jsTestSrcDir>${project.basedir}/src/test/resources/static/js</jsTestSrcDir>
+					<!-- See: http://phantomjs.org/; this plugin makes use of the core of: 
+						http://kylelieber.com/phantomjs-maven-plugin to download the headless webkit -->
 					<phantomjs>
 						<version>2.1.1</version>
 					</phantomjs>
+					<keepServerAlive>true</keepServerAlive>
+					<mvnTestSkip>${maven.test.skip}</mvnTestSkip>
+				</configuration>
+			</plugin>
+
+			<!-- Works with jasmin plugin, with collect coverage. Jasmine needs to 
+				have keepServerAlive set to true. -->
+			<plugin>
+				<groupId>com.github.timurstrekalov</groupId>
+				<artifactId>saga-maven-plugin</artifactId>
+				<version>1.5.5</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>coverage</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<skipTests>${maven.test.skip}</skipTests>
+					<baseDir>http://localhost:${jasmine.serverPort}</baseDir>
+					<outputDir>${project.build.directory}/jasmine/coverage</outputDir>
+					<noInstrumentPatterns>
+						<!-- These are regex patterns -->
+						<pattern>.*/webjars/.*</pattern>
+						<pattern>.*/static/libs/.*</pattern>
+						<pattern>.*/spec/.*</pattern>
+						<pattern>.*/.*[s|S]pec.*</pattern>
+					</noInstrumentPatterns>
 				</configuration>
 			</plugin>
 		</plugins>
